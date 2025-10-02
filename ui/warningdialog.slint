@@ -1,0 +1,45 @@
+import {Button, StandardButton} from "std-widgets.slint";
+import {VerticalBox, HorizontalBox, Palette} from "std-widgets.slint";
+
+export component WarningDialog inherits Window {
+    title: "Warning";
+    width: 400px;
+    height: 200px;
+
+    in property <[string]> buttons: ["OK"];
+    in property <string> text: "This is a warning message.";
+    in property <int> font-size: 14;
+    in property <int> font-weight: 600;
+
+    callback hide();
+
+    VerticalBox {
+        spacing: 10px;
+        padding: 20px;
+
+        // Put text in the center of the box
+        HorizontalBox {
+            padding-top: 40px;
+            alignment: center;
+            HorizontalBox {
+                alignment: center;
+                width: parent.width - 40px; // account for padding
+                Text {
+                    text: root.text;
+                    font-size: root.font-size * 1px;
+                    font-weight: root.font-weight;
+                    color: Palette.foreground;
+                }
+            }
+        }
+
+        StandardButton {
+            kind: ok;
+            width: 80px;
+            height: 30px;
+            clicked() => {
+                root.hide();
+            }
+        }
+    }
+}

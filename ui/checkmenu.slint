@@ -1,0 +1,186 @@
+
+import {Palette} from "std-widgets.slint";
+
+export struct MenuLabel {
+    val: string,
+    label: string,
+}
+
+ export component CheckMenu inherits Rectangle {
+    border-radius: 4px;
+    border-color: #333;
+    border-width: 0.5px;
+    background: Palette.background.darker(0.05);
+
+    height: self.options.length * 26px + 8px;
+
+    in property <[string]> options;
+    in-out property <string> selected: "";
+
+    callback pressed();
+    callback released();
+
+    ta := TouchArea {
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down {
+                root.pressed();
+            }
+            if event.kind == PointerEventKind.up {
+                root.visible = false;
+                root.released();
+            }
+        }
+    }
+
+    VerticalLayout {
+        spacing: 6px;
+        padding-left: 4px;
+        padding-right: 4px;
+
+        for option in options: Rectangle {
+            ta2 := TouchArea {
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.up {
+                        root.selected = option;
+                        root.visible = false;
+                        root.released();
+                    }
+                }
+            }
+
+            background: ta2.has-hover ? Palette.background.brighter(0.08) : Palette.background.darker(0.05);
+            border-radius: 4px;
+            HorizontalLayout {
+                if option == root.selected: Image {
+                    source: @image-url("check.svg");
+                    width: 16px;
+                    height: 16px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+                if option != root.selected: Rectangle {
+                    width: 16px;
+                    height: 16px;
+                }
+
+                Text {
+                    text: option;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: Palette.foreground.brighter(2.0);
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: parent.width - 8px;
+                    height: 20px;
+                }
+            }
+        }
+    }
+}
+
+export component CheckMenuWithLabel inherits Rectangle {
+    border-radius: 4px;
+    border-color: #333;
+    border-width: 0.5px;
+    background: Palette.background.darker(0.05);
+
+    height: self.options.length * 26px + 8px;
+
+    in property <[MenuLabel]> options;
+    in property <[string]> descriptions;
+    in-out property <string> selected: "";
+
+    callback pressed();
+    callback released();
+
+    ta := TouchArea {
+        enabled <=> root.visible;
+        pointer-event(event) => {
+            if event.kind == PointerEventKind.down {
+                debug("Pointer down on menu");
+                root.pressed();
+            }
+            if event.kind == PointerEventKind.up {
+                debug("Pointer up on menu");
+                root.visible = false;
+                root.released();
+            }
+        }
+    }
+
+    VerticalLayout {
+        spacing: 6px;
+        padding-left: 4px;
+        padding-right: 4px;
+
+        in-out property <int> cnt: 0;
+
+        for option in options: Rectangle {
+            ta2 := TouchArea {
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.up {
+                        root.selected = option.val;
+                        root.visible = false;
+                        root.released();
+                    }
+                }
+            }
+
+            background: ta2.has-hover ? Palette.background.brighter(0.08) : Palette.background.darker(0.05);
+            border-radius: 4px;
+            HorizontalLayout {
+                alignment: stretch;
+                spacing: 2px;
+                if option.val == root.selected: Image {
+                    source: @image-url("check.svg");
+                    width: 16px;
+                    height: 16px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+                if option.val != root.selected: Rectangle {
+                    width: 16px;
+                    height: 16px;
+                }
+
+                Text {
+                    text: option.val;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: Palette.foreground.brighter(2.0);
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                    height: 20px;
+                    width: 20px;
+                }
+
+                Rectangle {
+                    width: 4px;
+                }
+
+                Rectangle {
+                    width: 0.5px;
+                    height: 16px;
+                    y: 2px;
+                    border-color: Palette.foreground.darker(0.5);
+                    border-width: 0.5px;
+                }
+
+                Rectangle {
+                    width: 4px;
+                }
+
+                Text {
+                    text: option.label;
+                    font-size: 11px;
+                    font-weight: 400;
+                    color: Palette.foreground.brighter(1.5);
+                    horizontal-alignment: left;
+                    vertical-alignment: center;
+                    height: 20px;
+                    width: 72px;
+                }
+            }
+        }
+    }
+}

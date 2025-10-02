@@ -1,0 +1,403 @@
+import {Button, VerticalBox, HorizontalBox, ComboBox, GridBox, Palette, Slider } from "std-widgets.slint";
+import {WarningDialog, WarningDialog} from "warningdialog.slint";
+import {GroupBoxCollapsible, GroupBox} from "groupbox.slint";
+import {Utils} from "utils.slint";
+import {CheckMenu, CheckMenuWithLabel, MenuLabel} from "checkmenu.slint";
+
+export component FrameNumberButton {
+    width: 64px;
+    height: 64px;
+    y: 12px;
+    in property <int> num_frames: 1;
+    in-out property <bool> ta_enabled: true;
+    in-out property <int> current_frame: 1;
+
+    callback on_frame_changed(new_frame: int);
+    callback on_mouse_down(x: length, y: length);
+    callback on_mouse_up();
+
+    VerticalLayout {
+        spacing: 6px;
+        padding: 0px;
+        y: 0px;
+        width: parent.width;
+        horizontal-stretch: 1;
+        vertical-stretch: 1;
+
+        Rectangle {
+            ta := TouchArea {
+                enabled <=> root.ta_enabled;
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.down {
+                        root.ta_enabled = false;
+                        on_mouse_down(self.absolute-position.x, self.absolute-position.y + self.height + 4px);
+                    }
+                    if event.kind == PointerEventKind.up {
+                        // frame_menu.visible = false;                        
+                        root.on_frame_changed(root.current_frame);
+                        root.ta_enabled = true;
+                        on_mouse_up();
+                    }
+                }
+            }
+
+            background: ta.pressed ? Palette.background.darker(0.14) : ta.has-hover ? Palette.background.darker(0.08) : Palette.background.darker(0.05);
+            border-radius: 4px;
+            border-color: #333;
+            border-width: 0.5px;
+            width: parent.width;
+            height: 24px;
+
+            HorizontalLayout {
+                width: parent.width;
+                height: parent.height;
+
+                Text {
+                    text: root.current_frame + " / " + root.num_frames;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: Palette.foreground.brighter(2.0);
+                }
+
+                Image {
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: 20px;
+                    height: parent.height;
+                    source: @image-url("chevron-down.svg");
+                }
+            }
+        }
+
+        Text {
+            text: "HDU";
+            width: parent.width;
+            font-size: 12px;
+            horizontal-alignment: center;
+            vertical-alignment: top;
+            font-weight: 500;
+            color: Palette.foreground.brighter(2.0);
+        }
+    }
+}
+
+component ZoomButton {
+    width: 64px;
+    height: 64px + (zoom_menu.visible ? zoom_menu.height : 0px);
+    y: 12px;
+    property <[string]> zoom_options: ["50%", "75%", "100%", "125%", "150%", "200%", "300%", "400%"];
+
+    in-out property <string> selected_zoom: "100%";
+    property <bool> ta_enabled: true;
+
+    VerticalLayout {
+        spacing: 6px;
+        padding: 0px;
+        y: 0px;
+        width: parent.width;
+        horizontal-stretch: 1;
+        vertical-stretch: 1;
+
+        Rectangle {
+            ta := TouchArea {
+                enabled <=> root.ta_enabled;
+                pointer-event(event) => {
+                    if event.kind == PointerEventKind.down {
+                        zoom_menu.x = self.x;
+                        zoom_menu.y = parent.y + parent.height + 4px;
+                        zoom_menu.visible = true;
+                        root.ta_enabled = false;
+                    }
+                    if event.kind == PointerEventKind.up {
+                        zoom_menu.visible = false;
+                    }
+                }
+            }
+
+            background: ta.pressed ? Palette.background.darker(0.14) : ta.has-hover ? Palette.background.darker(0.08) : Palette.background.darker(0.05);
+            border-radius: 4px;
+            border-color: #333;
+            border-width: 0.5px;
+            width: parent.width;
+            height: 24px;
+
+            HorizontalLayout {
+                width: parent.width;
+                height: parent.height;
+
+                Text {
+                    text: root.selected_zoom;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: Palette.foreground.brighter(2.0);
+                }
+
+                Image {
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: 20px;
+                    height: parent.height;
+                    source: @image-url("chevron-down.svg");
+                }
+            }
+
+            // Darken background on mouseover
+        }
+
+        Text {
+            text: "Zoom";
+            width: parent.width;
+            font-size: 12px;
+            horizontal-alignment: center;
+            vertical-alignment: top;
+            font-weight: 500;
+            color: Palette.foreground.brighter(2.0);
+        }
+    }
+
+    zoom_menu := CheckMenu {
+        options: root.zoom_options;
+        visible: false;
+        width: 60px;
+        selected <=> root.selected_zoom;
+
+        released() => {
+            root.ta_enabled = true;
+        }
+    }
+}
+
+component ToolbarButton {
+    width: 64px;
+    height: 64px;
+    y: 0px;
+    callback clicked();
+    in property <image> icon: @image-url("file_open.svg");
+    in property <string> text: "Open";
+
+    VerticalLayout {
+        spacing: 0px;
+        padding: 0px;
+        alignment: center;
+        width: parent.width;
+        horizontal-stretch: 1;
+        vertical-stretch: 1;
+        Rectangle {
+            ta := TouchArea {
+                clicked => {
+                    root.clicked();
+                }
+            }
+
+            background: ta.pressed ? Palette.background.darker(0.14) : ta.has-hover ? Palette.background.darker(0.08) : Palette.background.darker(0.05);
+            border-radius: 4px;
+            width: parent.width;
+            height: 32px;
+
+            Image {
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                width: 32px;
+                height: parent.height;
+                source: root.icon;
+            }
+            // Darken background on mouseover
+        }
+
+        Text {
+            text: root.text;
+            width: parent.width;
+            font-size: 12px;
+            horizontal-alignment: center;
+            vertical-alignment: top;
+            font-weight: 500;
+            color: Palette.foreground.brighter(2.0);
+        }
+    }
+}
+
+export component AppWindow inherits Window {
+    title: "FITS Image Viewer";
+    preferred-height: 1024px;
+    preferred-width: 1200px;
+    min-width: 800px;
+
+    in property <image> image_source;
+
+    callback open_file_dialog() -> bool;
+    callback show_warning(text: string);
+    callback update_frame(new_frame: int);
+    in property <string> filename;
+    in property <int> numframes;
+    in-out property <string> zoom: "100%";
+    in-out property <int> current_frame <=> fnb.current_frame;
+    menu := MenuBar {
+        Menu {
+            title: "File";
+            MenuItem {
+                title: "Open";
+                activated => {
+                    if (root.open_file_dialog()) {
+                        show_warning("File opened successfully.");
+                    } else {
+                    }
+                }
+            }
+
+            MenuItem {
+                title: "Quit";
+            }
+        }
+    }
+
+    frame_menu := CheckMenuWithLabel {
+        options: [{ val: "1", label: "Primary" }];
+        visible: false;
+        width: 132px;
+        z: 0.1;
+        released() => {
+            fnb.ta_enabled = true;
+            root.current_frame = Utils.str2int(frame_menu.selected);
+        }
+    }
+
+    VerticalLayout {
+        width: 100%;
+        height: 100%;
+
+        alignment: stretch;
+
+        // Create the toolbar
+        toolbar := Rectangle {
+            width: 100%;
+            vertical-stretch: 0.0;
+
+            // Toolbar background
+            Rectangle {
+                width: parent.width;
+                height: 64px;
+                y: 0px;
+                background: Palette.background.darker(0.05);
+            }
+            
+            // Toolbar Line
+            Rectangle {
+                width: parent.width;
+                height: 1px;
+                border-width: 0.5px;
+                background: Palette.foreground.darker(0.25);
+                drop-shadow-blur: 2px;
+                y: 64px;
+            }
+
+            // The toolbar drawn on top
+            HorizontalLayout {
+                width: parent.width;
+                padding-left: 24px;
+                padding-right: 24px;
+                spacing: 12px;
+                ToolbarButton {
+                    text: "Open";
+                    icon: @image-url("file_open.svg");
+                    clicked => {
+                        root.open_file_dialog();
+                    }
+                }
+
+                fnb := FrameNumberButton {
+                    num_frames <=> root.numframes;
+                    on_frame_changed(new-frame) => {
+                        root.update_frame(new-frame);
+                        root.current-frame = new-frame;
+                    }
+                    on_mouse_down(x, y) => {
+                        frame_menu.x = x;
+                        frame_menu.y = y;
+                        frame_menu.options = Utils.frame_menu_labels();
+                        frame_menu.visible = true;
+                    }
+                    on_mouse_up() => {
+                        frame_menu.visible = false;
+                    }
+                }
+
+                // Spacer
+                Rectangle {
+                    width: 0.5px;
+                    height: 52px;
+                    y: 6px;
+                    border-color: #333;
+                    border-width: 0.5px;
+                }
+
+                ToolbarButton {
+                    text: "Header";
+                    icon: @image-url("show_header.svg");
+                }
+
+                ZoomButton {
+                    selected_zoom <=> root.zoom;
+                    height: 64px;
+                }
+
+                ToolbarButton {
+                    text: "Info";
+                    icon: @image-url("info.svg");
+                    clicked => {
+                        root.show_warning("This is a FITS image viewer written in Rust and Slint.");
+                    }
+                }
+            }
+        }
+
+        body := Rectangle {
+            x: 0;
+            width: 100%;
+            min-height: 600px;
+            border-color: #00ff00;
+            border-width: 0.0px;
+            vertical-stretch: 5.0;
+        }
+
+        // Create the status bar
+        statusbar := Rectangle {
+            width: 100%;
+            height: 24px;
+            x: 0;
+            vertical-stretch: 0.0;
+
+            Rectangle {
+                width: parent.width;
+                height: 24px;
+                y: parent.height - 24px;
+                background: Palette.background.darker(0.05);
+                border-width: 2px;
+            }
+
+            Rectangle {
+                width: parent.width;
+                height: 1px;
+                y: 0;
+                border-width: 0.5px;
+                border-color: Palette.foreground.darker(0.25);
+            }
+
+            Text {
+                y: 0px;
+                x: 24px;
+                text: root.filename == "" ? "No file loaded" : root.filename;
+                font-size: 11px;
+                font-weight: 500;
+                color: Palette.foreground.brighter(2.0);
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                width: parent.width - 24px;
+                height: parent.height;
+            }
+        }
+    }
+}

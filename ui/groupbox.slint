@@ -1,0 +1,154 @@
+import { Button, VerticalBox, HorizontalBox, ComboBox, GridBox, Palette, Slider } from "std-widgets.slint";
+
+export component GroupBoxCollapsible {
+    in-out property <string> title: "GroupBox";
+    in-out property <int> font-size: 14;
+    in-out property <int> font-weight: 600;
+    in-out property <bool> collapsed: false;
+
+    property <float> a: collapsed ? 0 : 1;
+    property <length> cmheight: a * content.preferred-height + topbar.height;
+
+    height: cmheight;
+
+    i-background := Rectangle {
+        border-width: 1px;
+        border-radius: 6px;
+        border-color: Palette.border;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: #333;
+        background: Palette.background;
+    }
+
+    topbar := Rectangle {
+        width: 100%;
+        height: titleh.height + 8px;
+        x: 0px;
+        y: 0px;
+        background: Palette.selection-background;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        border-bottom-left-radius: a > 0.1 ? 0 : 6px;
+        border-bottom-right-radius: a > 0.1 ? 0 : 6px;
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            clicked => {
+                collapsed = !collapsed;
+            }
+        }
+
+        bb := Image {
+            width: parent.height - 6px;
+            height: parent.height - 6px;
+            x: 3px;
+            y: 3px;
+
+            source: @image-url("./arrow.svg");
+            rotation-angle: 270deg + a * 90deg;
+            rotation-origin-x: self.width / 2;
+            rotation-origin-y: self.height / 2;
+        }
+
+        titleh := Text {
+            text: title;
+            font-size: font-size * 1px;
+            font-weight: font-weight;
+            y: 4px;
+            x: 32px;
+            color: Palette.foreground;
+        }
+    }
+
+    content := VerticalBox {
+        spacing: 6px;
+        padding-top: topbar.height + 4px;
+        visible: a > 0.25 ? true : false;
+        padding: 8px;
+        @children
+    }
+
+    animate a {
+        duration: 250ms;
+        easing: ease;
+    }
+}
+
+export component GroupBox {
+    in-out property <string> title: "GroupBox";
+    in-out property <int> font-size: 14;
+    in-out property <int> font-weight: 700;
+
+    i-background := Rectangle {
+        border-width: 1px;
+        border-radius: 6px;
+        border-color: #555;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: #333;
+        background: Palette.background;
+    }
+
+    topbar := Rectangle {
+        width: 100%;
+        height: titleh.height + 8px;
+        x: 0px;
+        y: 0px;
+        background: Palette.selection-background;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+
+        titleh := Text {
+            text: title;
+            font-size: font-size * 1px;
+            font-weight: font-weight;
+            y: 4px;
+            x: 32px;
+            color: #555;
+        }
+    }
+
+    content := VerticalBox {
+        spacing: 6px;
+        padding-top: topbar.height + 4px;
+        padding: 8px;
+        @children
+    }
+}
+
+export component GroupBoxOld {
+    in-out property <string> title: "GroupBox";
+    in-out property <int> font-size: 14;
+    in-out property <int> font-weight: 600;
+    i-background := Rectangle {
+        border-width: 1px;
+        border-radius: 6px;
+        border-color: #555;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: #333;
+        background: Palette.background;
+    }
+
+    padding: 4px;
+    Rectangle {
+        width: titleh.width + 12px;
+        height: 4px;
+        x: 16px;
+        y: -2px;
+        background: Palette.background;
+    }
+
+    titleh := Text {
+        text: title;
+        font-size: font-size * 1px;
+        font-weight: font-weight;
+        y: font-size / 2 * -1px;
+        x: 20px;
+        color: #555;
+    }
+
+    content := VerticalBox {
+        spacing: 6px;
+        padding: 8px;
+        @children
+    }
+}
